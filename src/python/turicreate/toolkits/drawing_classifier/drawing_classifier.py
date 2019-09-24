@@ -263,8 +263,21 @@ def create(input_dataset, target, feature=None, validation_set='auto',
             allow_missing=True)
 
     # To get weights: for warmstart Dense1 needs one forward pass to be initialised
-    test_input = _mx.nd.uniform(0, 1, (1,3) + (1,28,28))
-    model_output = model.forward(test_input[0])
+    #test_input = _mx.nd.uniform(0, 1, (1,3) + (1,28,28), ctx=ctx)
+    #curr_batch = train_loader[0]
+    for curr_batch in train_loader:
+        size = batch_size# - curr_batch.pad
+        sliced_data  = _mx.nd.slice_axis(curr_batch.data[0], axis=0, begin=0, end=size)
+        num_devices = min(sliced_data.shape[0], len(ctx))
+        batch_data = _mx.gluon.utils.split_and_load(sliced_data, ctx_list=ctx[:num_devices], even_split=False)
+        break
+    train_loader.reset()
+    #data = mx.gluon.utils.split_and_load(curr_batch.data[0], ctx_list=ctx, batch_axis=0, even_split=False)
+    print(batch_data)
+    print(type(batch_data))  
+    print(type(batch_data[0]))  
+    print(batch_data[0].shape)
+    model_output = model.forward(batch_data[0])#test_input[0])
 
     if params['use_tensorflow']:
         ## TensorFlow implementation
