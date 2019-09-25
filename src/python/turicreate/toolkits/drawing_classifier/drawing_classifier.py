@@ -262,7 +262,6 @@ def create(input_dataset, target, feature=None, validation_set='auto',
             ctx=ctx,
             allow_missing=True)
 
-    
 
     if params['use_tensorflow']:
         ## TensorFlow implementation
